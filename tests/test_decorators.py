@@ -36,7 +36,7 @@ class TestLogContext:
         assert {"a": 1, "b": 2, "c": 3} == mock_func()
 
     def test_no_variables(self):
-        @log_context()
+        @log_context
         def mock_func():
             return merge_contextvars(None, None, {"b": 2})
 

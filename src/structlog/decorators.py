@@ -3,26 +3,27 @@
 # repository for complete details.
 
 
-import functools
+from functools import partial, wraps
 
 from structlog.contextvars import bind_contextvars, unbind_contextvars
 
 
-def log_context(**contextvars):
-    def wrap(func):
-        @functools.wraps(func)
-        def wrapped_func(*args, **kwargs):
-            bind_contextvars(**contextvars)
-            func_ret = func(*args, **kwargs)
-            unbind_contextvars(*contextvars.keys())
-            return func_ret
-        return wrapped_func
-    return wrap
+def log_context(func=None, /, **contextvars):
+    if func is None:
+        return partial(log_context, contextvars)
+
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        bind_contextvars(**contextvars)
+        func_ret = func(*args, **kwargs)
+        unbind_contextvars(*contextvars.keys())
+        return func_ret
+    return wrapped_func
 
 
 def log_call(logger):
     def wrap(func):
-        @functools.wraps(func)
+        @wraps(func)
         def wrapped_func(*args, **kwargs):
             logger.info("Entered " + func.__name__)
             func_ret = func(*args, **kwargs)
